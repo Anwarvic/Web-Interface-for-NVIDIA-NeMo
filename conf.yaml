@@ -1,0 +1,25 @@
+asr:
+  # relative path to the trained ASR model
+  model_dir: './asr_model'
+  # either 'greedy' or 'beam'... use 'beam' when you have a language model
+  decoder: 'greedy'  #beam doesn't work yet
+
+  ##### IN CASE OF 'beam' DECODING #####
+  lm_path: "lm/3-gram.pruned.1e-7.binary"
+  beam_width: 100
+  alpha: 0.8
+  beta: 1
+
+tts:
+  # relative path to the trained TTS model
+  model_dir: './tts_model'
+  vocoder: "griffin-lim"   # ["griffin-lim", "wavglow"]
+  ##### IN CASE OF 'waveglow' VOCODER #####
+  vocoder_dir: "./tts_model/waveglow"
+  sigma: 0.6
+  denoising_strength: 0.0  # 0 to disable denoising
+  ##### IN CASE OF 'griffin-lim' VOCODER #####
+
+
+
+

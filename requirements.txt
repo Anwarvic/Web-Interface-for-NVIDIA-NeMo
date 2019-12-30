@@ -1,0 +1,6 @@
+pyaml
+torchaudio
+nemo-toolkit
+nemo-asr
+nemo-nlp
+nemo-tts

@@ -37,7 +37,12 @@ pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cud
 
 
 ### Using Language Model with ASR (OPTIONAL)
-If you want to use a language model when decoding, you need to install [Baidu's CTC decoders](https://github.com/PaddlePaddle/DeepSpeech) by running this command:
+If you want to use a language model when decoding, you need to install [Baidu's CTC decoders](https://github.com/PaddlePaddle/DeepSpeech):
 ```
-cd NeMo && ./scripts/install_decoders.sh && cd ..
+cd NeMo
+./scripts/install_decoders.sh
+cd ..
 ```
+**NOTE:**
+
+This command assumes that you've cloned the NeMo repository

@@ -1,33 +1,42 @@
 # Web Interface for NVIDIA NeMo
 
-NeMo (Neural Modules) is a toolkit for creating AI applications using neural modules - conceptual blocks of neural networks that take typed inputs and produce typed outputs. Such modules typically represent data layers, encoders, decoders, language models, loss functions, or methods of combining activations.
-
-NeMo makes it easy to combine and re-use these building blocks while providing a level of semantic correctness checking via its neural type system. As long as two modules have compatible inputs and outputs, it is legal to chain them together.
-
-NeMo's API is designed to be framework-agnostic, but currently only PyTorch is supported.
-
-The toolkit comes with extendable collections of pre-built modules for automatic speech recognition (ASR), natural language processing (NLP) and text synthesis (TTS). Furthermore, NeMo provides built-in support for distributed training and mixed precision on the latest NVIDIA GPUs.
-
-NeMo consists of:
-
-- NeMo Core: fundamental building blocks for all neural models and type system.
-- NeMo collections: pre-built neural modules for particular domains such as automatic speech recognition (nemo_asr), natural language processing (nemo_nlp) and text synthesis (nemo_tts).
+This repo is an attempt to combine all three main components of NeMo into a web interface that can be used easily without the need to dig deeper into the toolkit itself. 
 
 
-## Requirements
+## NeMo Overview
 
-- python 3.6 or python 3.7
-- PyTorch 1.2 or 1.3, you can install it from [here](https://pytorch.org/)
-- (optional for best performance on training/evaluating models) NVIDIA [APEX](https://github.com/NVIDIA/apex).
+NeMo stands for "Neural Modules" and it's a toolkit with a collections of pre-built modules for automatic speech recognition (ASR), natural language processing (NLP) and text synthesis (TTS). NeMo consists of:
+
+- NeMo Core: contains building blocks for all neural models and type system.
+- NeMo collections: contains pre-built neural modules for ASR, NLP and TTS.
+
+NeMo's is designed to be framework-agnostic, but currently only PyTorch is supported. Furthermore, NeMo provides built-in support for distributed training and mixed precision on the latest NVIDIA GPUs.
 
 
-## Install
+## Installation
 
-You can install all the dependencies of this repo using only the following command:
+To get started with this repository, you need to install:
+
+- PyTorch 1.2 or 1.3 from [here](https://pytorch.org/).
+- Clone the [NeMo](https://github.com/NVIDIA/NeMo) repository on GitHub:
+    ```
+    git clone --depth 1 https://github.com/NVIDIA/NeMo.git
+    ```
+- Install dependencies:
+    ```
+    pip install -r requirements.txt
+    ```
+
+### GPU Support (OPTIONAL)
+If your machine supports Cuda, then you need to install NVIDIA [APEX](https://github.com/NVIDIA/apex) for best performance on training/evaluating models.
 ```
-pip install -r requirements.txt
+git clone https://github.com/NVIDIA/apex
+cd apex
+pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
 
+
+### Using Language Model with ASR (OPTIONAL)
 If you want to use a language model when decoding, you need to install [Baidu's CTC decoders](https://github.com/PaddlePaddle/DeepSpeech) by running this command:
 ```
 cd NeMo && ./scripts/install_decoders.sh && cd ..

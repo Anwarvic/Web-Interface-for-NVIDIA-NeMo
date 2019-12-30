@@ -28,21 +28,20 @@ To get started with this repository, you need to install:
     ```
 
 ### GPU Support (OPTIONAL)
+
 If your machine supports Cuda, then you need to install NVIDIA [APEX](https://github.com/NVIDIA/apex) for best performance on training/evaluating models.
 ```
+cd NeMo
 git clone https://github.com/NVIDIA/apex
 cd apex
 pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
 
-
 ### Using Language Model with ASR (OPTIONAL)
-If you want to use a language model when decoding, you need to install [Baidu's CTC decoders](https://github.com/PaddlePaddle/DeepSpeech):
+
+If you want to use a language model when using ASR model, then you need to install [Baidu's CTC decoders](https://github.com/PaddlePaddle/DeepSpeech):
 ```
 cd NeMo
 ./scripts/install_decoders.sh
 cd ..
 ```
-**NOTE:**
-
-This command assumes that you've cloned the NeMo repository

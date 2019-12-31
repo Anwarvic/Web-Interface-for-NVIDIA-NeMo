@@ -129,6 +129,6 @@ class ASR:
 
 if __name__ == "__main__":
     asr = ASR()
-    wav_path = "/home/anwar/Downloads/the_result_is_shown_below.wav"
+    wav_path = "romance_gt.wav"
     text = asr.transcribe(wav_path)
     print("You said:", text)

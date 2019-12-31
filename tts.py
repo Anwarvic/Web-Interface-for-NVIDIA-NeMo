@@ -12,60 +12,73 @@ from utils import *
 
 class TTS:
     def __init__(self):
+        """Loads pre-trained ASR model"""
         device = nemo.core.DeviceType.CPU
         self.nf = nemo.core.NeuralModuleFactory(placement=device)
 
         # Create text to spectrogram model
         self.tts_conf = parse_yaml("conf.yaml")["tts"]
-        self.tacotron2_params = parse_yaml("./NeMo/examples/tts/configs/tacotron2.yaml")
+        self.tacotron2_params = parse_yaml(
+            os.path.join(self.tts_conf["model_dir"], "tacotron2.yaml"))
 
         self.nf.logger.info('================================')
         # create text embedding module
         self.text_embedding = nemo_tts.TextEmbedding(
                 len(self.tacotron2_params["labels"]) + 3, # + 3 special chars
                 **self.tacotron2_params["TextEmbedding"])
-        self.nf.logger.info(f"Number of parameters in text-embedding: {self.text_embedding.num_weights}")
+        self.text_embedding.restore_from(
+            os.path.join(self.tts_conf["model_dir"], "TextEmbedding.pt"))
+        self.nf.logger.info(f"Number of parameters in text-embedding: "
+                            f"{self.text_embedding.num_weights}")
         
         # create encoder
         self.t2_enc = nemo_tts.Tacotron2Encoder(
                     **self.tacotron2_params["Tacotron2Encoder"])
+        self.t2_enc.restore_from(
+            os.path.join(self.tts_conf["model_dir"], "Tacotron2Encoder.pt"))
         self.nf.logger.info(
             f"Number of parameters in encoder: {self.t2_enc.num_weights}")
         
         # create decoder
         self.t2_dec = nemo_tts.Tacotron2DecoderInfer(
                     **self.tacotron2_params["Tacotron2Decoder"])
+        self.t2_dec.restore_from(
+            os.path.join(self.tts_conf["model_dir"], "Tacotron2Decoder.pt"))
         self.nf.logger.info(
             f"Number of parameters in decoder: {self.t2_dec.num_weights}")
         
         # create PostNet
         self.t2_postnet = nemo_tts.Tacotron2Postnet(
                     **self.tacotron2_params["Tacotron2Postnet"])
+        self.t2_postnet.restore_from(
+            os.path.join(self.tts_conf["model_dir"], "Tacotron2Postnet.pt"))
         self.nf.logger.info(
             f"Number of parameters in postnet: {self.t2_postnet.num_weights}")
+
         total_weights= self.text_embedding.num_weights+self.t2_enc.num_weights \
                         + self.t2_dec.num_weights + self.t2_postnet.num_weights
-        
-        self.nf.logger.info(
-            f"Total number of parameters in model: {total_weights}")
-        self.nf.logger.info('================================')
+        self.nf.logger.info(f"Total number of parameters in model: "
+                            f"{total_weights}")
 
         # load waveglow if chosen
         if self.tts_conf["vocoder"] == "waveglow":
-            self.nf.logger.info("Running waveglow as a vocoder")
-            self.waveglow_params = \
-                    parse_yaml("./NeMo/examples/tts/configs/waveglow.yaml")
+            self.nf.logger.info("Loading waveglow as a vocoder")
+            self.waveglow_params = parse_yaml(
+                os.path.join(self.tts_conf["vocoder_dir"], "waveglow.yaml"))
             self.waveglow = nemo_tts.WaveGlowInferNM(
                                     sigma = self.tts_conf["sigma"],
                                     **self.waveglow_params["WaveGlowNM"])
+            self.waveglow.restore_from(
+                os.path.join(self.tts_conf["vocoder_dir"], "WaveGlowNM.pt"))
             if self.tts_conf["denoising_strength"] > 0:
-                self.nf.logger.info("Setup denoiser for waveglow")
+                self.nf.logger.info("Setting up a denoiser for waveglow")
                 self.waveglow.setup_denoiser()
                 self.nf.logger.info("Waveglow denoiser is ready")
-
-    
-    def synthesis(self, text):
         self.nf.logger.info('================================')
+
+
+    def synthesis(self, text):
+        """Reads text and returns the audio signal in a wav file"""
         self.nf.logger.info('Starting speech synthesis')
         # create inference DAGs
         data_layer = nemo_asr.TranscriptDataLayer(
@@ -95,7 +108,6 @@ class TTS:
         # Run tacotron 2
         evaluated_tensors = self.nf.infer(
                                     tensors = infer_tensors,
-                                    checkpoint_dir = self.tts_conf["model_dir"],
                                     cache = True,
                                     offload_to_cpu = True)
         mel_len = evaluated_tensors[-1]
@@ -128,9 +140,9 @@ class TTS:
             else:
                 self.nf.logger.warn("audio was not finite")
                 signal = np.array([0])
-            save_file = "griffin_sample.wav"
-            wavfile.write(save_file, self.tacotron2_params["sample_rate"], signal)
-            self.nf.logger.info("Wav file was generated and named: "+save_file)
+            outwav = "griffin_sample.wav"
+            wavfile.write(outwav, self.tacotron2_params["sample_rate"], signal)
+            self.nf.logger.info("Wav file was generated and named: " + outwav)
         
         elif self.tts_conf["vocoder"] == "waveglow":
             self.nf.logger.info("Running Waveglow as a vocoder")
@@ -138,11 +150,8 @@ class TTS:
             # Run waveglow
             evaluated_tensors = self.nf.infer(
                 tensors = [audio_pred],
-                checkpoint_dir = self.tts_conf["vocoder_dir"],
                 modules_to_restore = [self.waveglow],
-                use_cache = True
-            )
-            self.nf.logger.info("Done Running Waveglow")
+                use_cache = True)
             mel_spec = evaluated_tensors[0][0]
             sample = mel_spec.cpu().numpy()[0]
             sample_len = mel_len[0][0] * self.tacotron2_params["n_stride"]
@@ -156,13 +165,14 @@ class TTS:
             else:
                 spec, _ = librosa.core.magphase(librosa.core.stft(
                              sample, n_fft = self.waveglow_params["n_fft"]))
-            save_file = "waveglow_sample.wav"
-            wavfile.write(save_file, self.waveglow_params["sample_rate"], sample)
-            self.nf.logger.info("Wav file was generated and named: "+save_file)
+            outwav = "waveglow_sample.wav"
+            wavfile.write(outwav, self.waveglow_params["sample_rate"], sample)
+            self.nf.logger.info("Wav file was generated and named: " + outwav)
+
 
 
 
 if __name__ == "__main__":
     tts = TTS()
-    tts.synthesis("Abdo is here.")
-    # this will generate a wav file in the current directory 
+    tts.synthesis("Speech Synthesis is damn cool.")
+    # this will generate a wav file in the current directory

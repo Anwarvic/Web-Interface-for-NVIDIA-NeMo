@@ -41,4 +41,23 @@ def build_manifest(wav_path):
     return filename
 
 
+def build_text_path(text):
+    """
+    This function takes the a text as input and writes the metadata into json
+    file on the following format:
+    {
+        "audio_filepath": "",
+        "duration": 1.0,
+        "text": text
+    }
+    """
+    filename = 'text.json'
+    d = {
+        "audio_filepath": "",
+        "duration": 1.0,
+        "text": text
+    }
+    with open(filename, 'w') as fout:
+        json.dump(d, fout)
+    return filename
 

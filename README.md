@@ -12,6 +12,10 @@ This repo is an attempt to combine all three main components of NeMo into a web 
 
 NeMo's is designed to be framework-agnostic, but currently only PyTorch is supported. Furthermore, NeMo provides built-in support for distributed training and mixed precision on the latest NVIDIA GPUs.
 
+<p align="center">
+<img src="https://devblogs.nvidia.com/wp-content/uploads/2019/12/Conversation_AI_Workflow_v02.png"  width="600"/> 
+</p>
+
 
 ## Installation
 

@@ -3,9 +3,9 @@
 This repo is an attempt to combine all three main components of NeMo into a web interface that can be used easily without the need to dig deeper into the toolkit itself. 
 
 
-## NeMo Overview
+## NeMo
 
-NeMo stands for "Neural Modules" and it's a toolkit with a collections of pre-built modules for automatic speech recognition (ASR), natural language processing (NLP) and text synthesis (TTS). NeMo consists of:
+[NeMo](https://github.com/NVIDIA/NeMo) stands for "Neural Modules" and it's a toolkit created bey NVIDIA with a collections of pre-built modules for automatic speech recognition (ASR), natural language processing (NLP) and text synthesis (TTS). NeMo consists of:
 
 - NeMo Core: contains building blocks for all neural models and type system.
 - NeMo collections: contains pre-built neural modules for ASR, NLP and TTS.
@@ -18,10 +18,6 @@ NeMo's is designed to be framework-agnostic, but currently only PyTorch is suppo
 To get started with this repository, you need to install:
 
 - PyTorch 1.2 or 1.3 from [here](https://pytorch.org/).
-- Clone the [NeMo](https://github.com/NVIDIA/NeMo) repository on GitHub:
-    ```
-    git clone --depth 1 https://github.com/NVIDIA/NeMo.git
-    ```
 - Install dependencies:
     ```
     pip install -r requirements.txt

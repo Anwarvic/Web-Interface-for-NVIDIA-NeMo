@@ -14,7 +14,8 @@ class ASR:
         device = nemo.core.DeviceType.CPU
         self.nf = nemo.core.NeuralModuleFactory(placement=device)
         # load model configuration
-        jasper_params = parse_yaml("./NeMo/examples/asr/configs/quartznet15x5.yaml")
+        jasper_params = parse_yaml(
+            os.path.join(self.asr_conf["model_dir"], "quartznet15x5.yaml"))
         self.labels = jasper_params["labels"]
         self.sample_rate = jasper_params["sample_rate"]
 
@@ -25,19 +26,25 @@ class ASR:
         del self.eval_dl_params["eval"]
         self.preprocessor = nemo_asr.AudioToMelSpectrogramPreprocessor(
             sample_rate = self.sample_rate,
-            **jasper_params["AudioToMelSpectrogramPreprocessor"])
+            **jasper_params["AudioPreprocessing"])
         
         # model encoder
-        feats = jasper_params["AudioToMelSpectrogramPreprocessor"]["features"]
+        feats = jasper_params["AudioPreprocessing"]["features"]
         self.jasper_encoder = nemo_asr.JasperEncoder(
             feat_in = feats,
             **jasper_params["JasperEncoder"])
+        self.jasper_encoder.restore_from(
+                            os.path.join(self.asr_conf["model_dir"],
+                                        "JasperEncoder-STEP-247400.pt"))
 
         # model decoder
         filters = jasper_params["JasperEncoder"]["jasper"][-1]["filters"]
         self.jasper_decoder = nemo_asr.JasperDecoderForCTC(
             feat_in = filters,
             num_classes=len(self.labels))
+        self.jasper_decoder.restore_from(
+                            os.path.join(self.asr_conf["model_dir"],
+                                        "JasperDecoderForCTC-STEP-247400.pt"))
 
         self.nf.logger.info('================================')
         self.nf.logger.info(
@@ -48,7 +55,7 @@ class ASR:
             f"Total number of parameters in model: "
             f"{self.jasper_decoder.num_weights + self.jasper_encoder.num_weights}")
         self.nf.logger.info('================================')
-
+        
         # CTC decoder
         if self.asr_conf["decoder"] == "beam":
             self.ctc_decoder = nemo_asr.BeamSearchDecoderWithLM(
@@ -64,9 +71,8 @@ class ASR:
 
 
     def transcribe(self, wav_path):
-        """
-        Reads audio file and returns the recognized transcrition
-        """
+        """Reads audio file and returns the recognized transcrition"""
+        self.nf.logger.info('Started Transcribing Speech')
         data_layer = nemo_asr.AudioToTextDataLayer(
             manifest_filepath = build_manifest(wav_path),
             sample_rate = self.sample_rate,
@@ -97,7 +103,6 @@ class ASR:
                     log_probs=log_probs_e1, log_probs_length=encoded_len_e1)
             evaluated_tensors = self.nf.infer(
                     tensors=[beam_predictions_e1],
-                    checkpoint_dir = self.asr_conf["model_dir"],
                     use_cache=False)
             hypotheses = []
             # Over mini-batch
@@ -109,7 +114,6 @@ class ASR:
                             transcript_e1, transcript_len_e1, encoded_len_e1]
             evaluated_tensors = self.nf.infer(
                 tensors = eval_tensors,
-                checkpoint_dir = self.asr_conf["model_dir"],
                 cache = True
             )
             hypotheses = post_process_predictions(

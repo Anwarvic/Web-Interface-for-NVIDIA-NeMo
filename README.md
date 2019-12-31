@@ -82,14 +82,14 @@ Here, I'm going to explain how to use the Text To Speech module inside **NeMo co
 
 - Locate your TTS model inside `tts_model` directory. Or locate it any where you want, just edit the YAML variable `tts: model_dir` inside `conf.yaml` file.
 
-- Determine a vocoder model... You can use `griffin-lim` used in tacotron1 which is super fast and doesn't need any training. If you want to get a better result, then you will have to either:
+- Determine a vocoder model... You can use `griffin-lim` used in tacotron1 which is super fast and doesn't need any training. But, if you want to get better results, then you will have to either:
 
-    - Train your own vocoder
-    - Use an already trained vocoder... which is what I have done and you can download the pre-trained waveglow model that I have used from [here](https://ngc.nvidia.com/catalog/models/nvidia:waveglow_ljspeech).
+    - Train your own vocoder.
+    - Use an already trained vocoder... which is what I did by downloading the pre-trained waveglow model from [here](https://ngc.nvidia.com/catalog/models/nvidia:waveglow_ljspeech).
 
-- (OPTIONAL) If you decided to use a **waveglow** vocoder, then you need to locate it in this directory `tts_model/waveglow`. Or you can locate it any where you want, just edit the YAML variable `tts: vocoder_dir` inside `conf.yaml` file.
+- (OPTIONAL) If you decided to use a **waveglow** vocoder, then you need to locate it in this directory `./tts_model/waveglow`. Or you can locate it any where you want, just edit the YAML variable `tts: vocoder_dir` inside `conf.yaml` file.
 
-- Run the following code to perform a speech-synthesis on your preferred text:
+- Run the following code to perform a speech-synthesis operation on your preferred text:
     ```
     >>> from tts import TTS
     >>> tts_model = TTS()
